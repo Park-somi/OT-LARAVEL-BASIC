@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Auth;
 
 class ArticleController extends Controller
 {
+    public function __construct(){
+        $this->middleware('auth')->except('index', 'show');
+    }
+
     public function create() {
         return view('articles/create');
     }
