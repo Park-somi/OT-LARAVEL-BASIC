@@ -35,9 +35,7 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::get('/articles/create', function () {
-    return view('articles/create');
-});
+Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create');
 
 Route::post('/articles', function (Request $request){
 
@@ -97,8 +95,9 @@ Route::post('/articles', function (Request $request){
         'user_id' => Auth::id() // 현재 사용자 ID 저장
     ]);
 
-    return 'hello';
-});
+    return redirect()->route('articles.index');
+
+})->name('articles.store');
 
 Route::get('articles', function(Request $request){
     // $page = $request->input('page', 1); // 요청에서 'page'파라미터를 받아옴. 없으면 기본값 1로 설정
@@ -156,8 +155,35 @@ Route::get('articles', function(Request $request){
     
     // 2. 'view'로의 데이터 전달 방식 : with()
     // return view('articles.index')->with('articles', $articles);
-});
+})->name('articles.index');
 
 Route::get('articles/{article}', function(Article $article){
     return view('articles.show', ['article' => $article]);
-});
+})->name('articles.show');
+
+Route::get('articles/{article}/edit', function(Article $article){
+    return view('articles.edit', ['article' => $article]);
+})->name('articles.edit');
+
+Route::patch('articles/{article}', function(Request $request, Article $article){
+    // 유효성 검사
+    $input = $request->validate([
+        'body' => [
+            'required', // 필수값
+            'string', // 문자열이어야 함
+            'max:255' // 255자까지만 입력 가능
+        ]
+    ]);
+
+    $article->body = $input['body'];
+    $article->save();
+
+    return redirect()->route('articles.index');
+
+})->name('articles.update');
+
+Route::delete('articles/{article}', function(Article $article){
+    $article->delete();
+
+    return redirect()->route('articles.index');
+})->name('articles.delete');
