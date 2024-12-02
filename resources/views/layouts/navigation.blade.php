@@ -21,6 +21,7 @@
                 </div>
             </div>
 
+            @auth
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
@@ -64,6 +65,16 @@
                     </svg>
                 </button>
             </div>
+            @else
+            <div class="flex">
+                <x-nav-link :href="route('login')">
+                    {{ __('로그인') }}
+                </x-nav-link>   
+                <x-nav-link :href="route('register')">
+                    {{ __('회원가입') }}
+                </x-nav-link>                      
+            </div>
+            @endauth
         </div>
     </div>
 
@@ -78,6 +89,7 @@
             </x-responsive-nav-link>
         </div>
 
+        @auth
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
@@ -102,5 +114,6 @@
                 </form>
             </div>
         </div>
+        @endauth
     </div>
 </nav>
