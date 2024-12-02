@@ -12,7 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class ArticleControllerTest extends TestCase
 {
     use RefreshDatabase; // 테스트 실행할 때마다 데이터 삭제 -> 데이터는 남지 않음
-    
+
     /**
      * @test
     */ 
@@ -105,7 +105,7 @@ class ArticleControllerTest extends TestCase
     public function 글을_삭제할_수_있다(): void{
         $article = Article::factory()->create();
 
-        $this->delete(route('articles.delete', ['article' => $article->id]))
+        $this->delete(route('articles.destroy', ['article' => $article->id]))
         ->assertRedirect(route('articles.index'));
 
         // 특정 조건에 해당하는 데이터가 데이터베이스에 없는지 확인

@@ -15,7 +15,8 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
+        <div class="min-h-screen">
+            <!-- 뷰에서 다른 뷰를 불러옴 -->     
             @include('layouts.navigation')
 
             <!-- Page Heading -->
