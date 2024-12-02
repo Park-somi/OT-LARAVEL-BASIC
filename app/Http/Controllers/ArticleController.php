@@ -130,17 +130,29 @@ class ArticleController extends Controller
     }
 
     public function edit(Article $article){
+        // $this->authorize('update', $article);
+
         return view('articles.edit', ['article' => $article]);
     }
 
     public function update(Request $request, Article $article){
+        // 권한설정(1) - 모델
+        // 권한 실패 시, 직접 응답을 정의해줘야 함
+        // if(!Auth::user()->can('update', $article)){
+        //     abort(403);
+        // };
+
+        // 권한설정(2) - 컨트롤러 헬퍼
+        // 권한 실패 시, 자동으로 응답까지 만들어서 내보내줌
+        $this->authorize('update', $article);
+
         // 유효성 검사
-    $input = $request->validate([
-        'body' => [
-            'required', // 필수값
-            'string', // 문자열이어야 함
-            'max:255' // 255자까지만 입력 가능
-        ]
+        $input = $request->validate([
+            'body' => [
+                'required', // 필수값
+                'string', // 문자열이어야 함
+                'max:255' // 255자까지만 입력 가능
+            ]
     ]);
 
     $article->body = $input['body'];
@@ -150,6 +162,8 @@ class ArticleController extends Controller
     }
 
     public function destroy(Article $article){
+        $this->authorize('delete', $article);
+
         $article->delete();
 
         return redirect()->route('articles.index');
