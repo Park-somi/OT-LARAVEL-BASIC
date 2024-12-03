@@ -38,6 +38,7 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         // 글로벌 제약
+        // 라우트 파라미터 이름이 user일 때, 해당 값이 정규표현식에 부합해야 라우트를 처리하도록 제한
         // Route::pattern('user', '[A-Za-z0-9-]+');
     }
 }
