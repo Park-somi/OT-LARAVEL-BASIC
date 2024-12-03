@@ -36,5 +36,8 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });
+
+        // 글로벌 제약
+        // Route::pattern('user', '[A-Za-z0-9-]+');
     }
 }
