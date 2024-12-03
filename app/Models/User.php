@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -54,8 +56,27 @@ class User extends Authenticatable
         return 'username';   
     }
 
+    // article과의 관계 설정
     public function articles() : HasMany
     {
         return $this->hasMany(Article::class);
+    }
+
+    // 팔로워
+    public function followers() : BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'followers', 'user_id', 'follower_id');
+    }
+
+    // 팔로잉 
+    public function followings() : BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'followers', 'follower_id', 'user_id');
+    }
+
+    // 팔로워 중에 해당 유저가 존재하는지 확인
+    public function isFollowing(User $user) : bool
+    {
+        return $this->followings()->where('user_id', $user->id)->exists();
     }
 }
