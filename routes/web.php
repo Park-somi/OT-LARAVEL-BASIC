@@ -52,3 +52,6 @@ require __DIR__.'/auth.php';
 Route::resource('articles', ArticleController::class);
 
 Route::resource('comments', CommentController::class);
+
+// 개별 프로필 조회 라우트
+Route::get('profile/{user}', [ProfileController::class, 'show'])->name('profile');
