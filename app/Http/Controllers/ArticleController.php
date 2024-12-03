@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\EditArticleRequest;
 use App\Http\Requests\CreateArticleRequest;
@@ -73,9 +74,13 @@ class ArticleController extends Controller
     }
 
     public function index(){
-        $articles = Article::with('user')
-    ->latest()
-    ->paginate();
+        $articles = Article::with('user') // Eloquent 관계
+        ->withCount('comments') // 댓글 수 표시
+        ->withExists(['comments as recent_comments_exists' => function($query){ // 24시간이 안지난 댓글이 존재하는지
+            $query->where('created_at', '>', Carbon::now()->subDay());
+        }])
+        ->latest()
+        ->paginate();
 
     // $articles->load('user'); // Eager Loading 두 번째 방법 : load()
 
@@ -121,6 +126,9 @@ class ArticleController extends Controller
     }
 
     public function show(Article $article){
+        $article->load('comments.user');
+        $article->loadCount('comments');
+
         return view('articles.show', ['article' => $article]);
     }
 
