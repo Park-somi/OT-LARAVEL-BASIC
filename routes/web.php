@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
 
 /*
@@ -49,3 +50,5 @@ require __DIR__.'/auth.php';
 // 리소스 라우트
 // Route::resource('articles', ArticleController::class)->only(['index', 'show']);
 Route::resource('articles', ArticleController::class);
+
+Route::resource('comments', CommentController::class);
