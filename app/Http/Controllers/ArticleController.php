@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\EditArticleRequest;
+use App\Http\Requests\CreateArticleRequest;
+use App\Http\Requests\DeleteArticleRequest;
+use App\Http\Requests\updateArticleRequest;
 
 class ArticleController extends Controller
 {
@@ -16,16 +19,8 @@ class ArticleController extends Controller
         return view('articles/create');
     }
 
-    public function store(Request $request){
-
-        // 유효성 검사
-        $input = $request->validate([
-            'body' => [
-                'required', // 필수값
-                'string', // 문자열이어야 함
-                'max:255' // 255자까지만 입력 가능
-            ]
-        ]);
+    public function store(CreateArticleRequest $request){
+        $input = $request->validated();
     
         // $host = config('database.connections.mysql.host'); // config 파일에서 데이터베이스 호스트 가져오기
         // $dbname = config('database.connections.mysql.database'); // 데이터베이스 이름 가져오기
@@ -129,13 +124,13 @@ class ArticleController extends Controller
         return view('articles.show', ['article' => $article]);
     }
 
-    public function edit(Article $article){
+    public function edit(EditArticleRequest $request, Article $article){
         // $this->authorize('update', $article);
 
         return view('articles.edit', ['article' => $article]);
     }
 
-    public function update(Request $request, Article $article){
+    public function update(updateArticleRequest $request, Article $article){
         // 권한설정(1) - 모델
         // 권한 실패 시, 직접 응답을 정의해줘야 함
         // if(!Auth::user()->can('update', $article)){
@@ -144,26 +139,18 @@ class ArticleController extends Controller
 
         // 권한설정(2) - 컨트롤러 헬퍼
         // 권한 실패 시, 자동으로 응답까지 만들어서 내보내줌
-        $this->authorize('update', $article);
+        // $this->authorize('update', $article);
 
-        // 유효성 검사
-        $input = $request->validate([
-            'body' => [
-                'required', // 필수값
-                'string', // 문자열이어야 함
-                'max:255' // 255자까지만 입력 가능
-            ]
-    ]);
+        // 유효성 검사가 완료된 요청 가져오기
+        $input = $request->validated();
 
-    $article->body = $input['body'];
-    $article->save();
+        $article->body = $input['body'];
+        $article->save();
 
-    return redirect()->route('articles.index');
+        return redirect()->route('articles.index');
     }
 
-    public function destroy(Article $article){
-        $this->authorize('delete', $article);
-
+    public function destroy(DeleteArticleRequest $request, Article $article){
         $article->delete();
 
         return redirect()->route('articles.index');
