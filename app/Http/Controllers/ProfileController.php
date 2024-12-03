@@ -39,16 +39,23 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
+    // ProfileUpdateRequest를 통해 유효성 검사된 데이터를 받아와 사용자의 프로필을 업데이트
+    // 업데이트 후, 프로필 편집 페이지로 리디렉션하고 상태 메시지를 반환
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // 현재 인증된 사용자 객체를 가져오고, 검증된 데이터를 채움
         $request->user()->fill($request->validated());
 
+        // 이메일 필드가 변경되었는지 확인
         if ($request->user()->isDirty('email')) {
+            // 이메일이 변경된 경우, email_verified_at을 null로 설정하여 인증을 초기화
             $request->user()->email_verified_at = null;
         }
 
+        // 변경된 데이터를 데이터베이스에 저장
         $request->user()->save();
 
+        // 프로필 편집 페이지로 리디렉션하며, 상태 메시지('profile-updated') 전달
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
