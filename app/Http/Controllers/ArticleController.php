@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\EditArticleRequest;
+use Illuminate\Database\Eloquent\Builder;
 use App\Http\Requests\CreateArticleRequest;
 use App\Http\Requests\DeleteArticleRequest;
 use App\Http\Requests\updateArticleRequest;
@@ -73,56 +75,65 @@ class ArticleController extends Controller
         return redirect()->route('articles.index');
     }
 
-    public function index(){
+    public function index(Request $request){
+        $q = $request->input('q');
+
         $articles = Article::with('user') // Eloquent 관계
         ->withCount('comments') // 댓글 수 표시
         ->withExists(['comments as recent_comments_exists' => function($query){ // 24시간이 안지난 댓글이 존재하는지
             $query->where('created_at', '>', Carbon::now()->subDay());
         }])
+        ->when($q, function($query, $q){
+            $query->where('body', 'like', "%$q%")
+            ->orWhereHas('user', function(Builder $query) use ($q) {
+                $query->where('username', 'like', "%$q%");
+            });
+        })
         ->latest()
         ->paginate();
 
-    // $articles->load('user'); // Eager Loading 두 번째 방법 : load()
+        // $articles->load('user'); // Eager Loading 두 번째 방법 : load()
 
-    // $now = Carbon::now(); // Carbon 라이브러리를 통해 현재 시간을 가져옴
-    // $past = clone $now; // 현재 시간 객체를 복사하여 'past'라는 객체에 저장
-    // $past->subHours(3); // 'past'객체에서 3시간을 뺌
+        // $now = Carbon::now(); // Carbon 라이브러리를 통해 현재 시간을 가져옴
+        // $past = clone $now; // 현재 시간 객체를 복사하여 'past'라는 객체에 저장
+        // $past->subHours(3); // 'past'객체에서 3시간을 뺌
 
-    // dd($now->diff($past)); // 'now'와 'past' 객체의 시간 차이 출력
-    // dd($now->diffInHours($past)); // 시간 차이를 시간 단위로 출력
-    // dd($now->diffInMinutes($past)); // 시간 차이를 분 단위로 출력
+        // dd($now->diff($past)); // 'now'와 'past' 객체의 시간 차이 출력
+        // dd($now->diffInHours($past)); // 시간 차이를 시간 단위로 출력
+        // dd($now->diffInMinutes($past)); // 시간 차이를 분 단위로 출력
 
-    // 수동으로 페이지네이션 설정 방법
-    // ->skip($skip) // 페이지네이션에서 건너뛸 항목 수
-    // ->take($perPage) // 한 페이지에서 보여줄 항목 수
-    // ->get(); // 결과를 컬렉션으로 가져옴
+        // 수동으로 페이지네이션 설정 방법
+        // ->skip($skip) // 페이지네이션에서 건너뛸 항목 수
+        // ->take($perPage) // 한 페이지에서 보여줄 항목 수
+        // ->get(); // 결과를 컬렉션으로 가져옴
 
-    // $articles->withQueryString(); // 링크에 문자열을 붙여줌
-    // $articles->appends(['filter' => 'name']); // 기존 문자열 이외의 문자열 추가해줌
+        // $articles->withQueryString(); // 링크에 문자열을 붙여줌
+        // $articles->appends(['filter' => 'name']); // 기존 문자열 이외의 문자열 추가해줌
 
-    // $totalCount = Article::count(); // 전체 Article 개수
+        // $totalCount = Article::count(); // 전체 Article 개수
 
-    // dd(Carbon::now()); // 현재 시간
-    // dd(Carbon::now()->addHour()); // 현재 시간 + 1시간
-    // dd(Carbon::now()->addHour(1)->addMinutes(10)); // 현재 시간 + 1시간 10분
-    // dd(Carbon::now()->subHour(1)->addMinutes(10)); // 현재 시간 - 1시간 10분
-    
-    // $results = DB::table('articles as a') // DB 쿼리빌더를 사용해서 'articles' 테이블의 데이터 가져오기
-    // ->join('users as u', 'a.user_id', '=', 'u.id') // 'articles' 테이블과 'users' 테이블을 조인
-    // ->select(['a.*'], 'u.name') // 'articles'의 모든 필드와 'users' 테이블의 'name' 필드를 선택
-    // ->latest()
-    // ->paginate();
+        // dd(Carbon::now()); // 현재 시간
+        // dd(Carbon::now()->addHour()); // 현재 시간 + 1시간
+        // dd(Carbon::now()->addHour(1)->addMinutes(10)); // 현재 시간 + 1시간 10분
+        // dd(Carbon::now()->subHour(1)->addMinutes(10)); // 현재 시간 - 1시간 10분
+        
+        // $results = DB::table('articles as a') // DB 쿼리빌더를 사용해서 'articles' 테이블의 데이터 가져오기
+        // ->join('users as u', 'a.user_id', '=', 'u.id') // 'articles' 테이블과 'users' 테이블을 조인
+        // ->select(['a.*'], 'u.name') // 'articles'의 모든 필드와 'users' 테이블의 'name' 필드를 선택
+        // ->latest()
+        // ->paginate();
 
-    // 1. 'view'로의 데이터 전달 방식 : 배열
-    return view(
-        'articles.index', 
-        [
-            'articles' => $articles // 뷰에 'articles' 데이터 전달
-            // 'results' => $results
-            // 'totalCount' => $totalCount,
-            // 'page' => $page,
-            // 'perPage' => $perPage
-        ]);
+        // 1. 'view'로의 데이터 전달 방식 : 배열
+        return view(
+            'articles.index', 
+            [
+                'articles' => $articles, // 뷰에 'articles' 데이터 전달
+                // 'results' => $results,
+                // 'totalCount' => $totalCount,
+                // 'page' => $page,
+                // 'perPage' => $perPage
+                'q' => $q
+            ]);
     }
 
     public function show(Article $article){
