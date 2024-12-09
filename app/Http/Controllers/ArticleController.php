@@ -139,6 +139,7 @@ class ArticleController extends Controller
     public function show(Article $article){
         $article->load('comments.user');
         $article->loadCount('comments');
+        $article->loadCount('comments as recent_comments_exists');
 
         return view('articles.show', ['article' => $article]);
     }

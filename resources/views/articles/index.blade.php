@@ -12,7 +12,7 @@
         </div>
     </x-slot>
 
-    <div class="container p-5 mx-auto">
+    <div class="container p-5 max-w-7xl mx-auto">
         @foreach($articles as $article)
             <x-list-article-item :article=$article />
         @endforeach

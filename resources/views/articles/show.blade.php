@@ -1,28 +1,33 @@
 <x-app-layout>
-    <div class="container p-5 mx-auto">
-        <div class="border rounded p-4">
-            <p>{!! nl2br(e($article->body)) !!}</p>
-            <p>{{ $article->user->name }}</p>
-            <p class="text-xs text-gray-500">
-                <a href="{{ route('articles.show', ['article' => $article->id]) }}">
-                    {{ $article->updated_at->diffForHumans() }}
-                    <span>댓글 {{ $article->comments_count }}</span>
-                </a>
-            </p>
+    <div class="container p-5 max-w-7xl mx-auto">
+        <div class="border rounded p-4 flex justify-between">
+            <div>
+                <p>{!! nl2br(e($article->body)) !!}</p>
+                <p>{{ $article->user->name }}</p>
+                <p class="text-xs text-gray-500">
+                    <a href="{{ route('articles.show', ['article' => $article->id]) }}">
+                        {{ $article->updated_at->diffForHumans() }}
+                        <span>댓글 {{ $article->comments_count }}</span>
+                        <span class="text-red-500">@if($article->recent_comments_exists) (new) @endif</span>
+                    </a>
+                </p>
+            </div>
     
             <x-article-button-group :article=$article/>
         </div>
         <!-- 댓글 영역 시작 -->
         <div class="mt-3">
             <!-- 댓글 작성 폼 시작 -->
-            <form action="{{ route('comments.store') }}" method="POST" class="flex">
-                @csrf
-                <input type="hidden" name="article_id" value="{{ $article->id }}" />
-                <x-text-input name="body" class="mr-2"/>
+            <form action="{{ route('comments.store') }}" method="POST">
+                <div class="flex items-center">
+                    @csrf
+                    <input type="hidden" name="article_id" value="{{ $article->id }}" />
+                    <x-text-input name="body" class="mr-2 flex-grow h-11"/>
+                    <x-primary-button class="h-11">댓글 쓰기</x-primary-button>
+                </div>
                 @error('body')
-                    <x-input-error :messages=$messages />
+                    <p class="text-xs text-red-500 mb-3 mt-3">{{ $message }}</p>
                 @enderror
-                <x-primary-button>댓글 쓰기</x-primary-button>
             </form>
             <!-- 댓글 작성 폼 끝 -->
 
@@ -34,7 +39,7 @@
                             <div id="comment_body_{{ $comment->id }}">{{ $comment->body }}</div>
                             <div class="flex items-center">
                                 @can('update', $comment)
-                                <button class="text-xs mr-2 text-gray-500" onclick="editComment('{{ $comment->id }}')">수정</button>
+                                <button class="text-xs mr-2 text-blue-500" onclick="editComment('{{ $comment->id }}')">수정</button>
                                 @endcan
                                 @can('delete', $comment)
                                 <form action="{{ route('comments.destroy', ['comment' => $comment->id]) }}" class="flex items-center" method="POST">
