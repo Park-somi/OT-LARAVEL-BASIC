@@ -8,25 +8,20 @@ use App\Models\Comment;
 
 class CommentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct(){
+        $this->middleware('auth')->only('store');
+    }
+
     public function index()
     {
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreCommentRequest $request)
     {
         $input = $request->validated();
@@ -40,35 +35,36 @@ class CommentController extends Controller
         return redirect()->route('articles.show', ['article' => $input['article_id']]);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Comment $comment)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Comment $comment)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateCommentRequest $request, Comment $comment)
     {
-        //
+        $input = $request->validated();
+
+        $comment->body = $input['body'];
+        $comment->updated_at = now();
+        $comment->save();
+
+        // JSON 형식으로 응답 반환
+        return response()->json([
+            'success' => true,
+            'message' => '댓글이 수정되었습니다.',
+            'data' => $comment
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Comment $comment)
     {
-        //
+        $comment->delete();
+
+        return redirect()->back();
     }
 }

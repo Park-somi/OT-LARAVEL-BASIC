@@ -1,9 +1,11 @@
 <div class="flex flex-row">
     @can('update', $article)
     <p class="mr-1">
-        <a href="{{ route('articles.edit', ['article' => $article->id]) }}" class="button rounded bg-blue-500 px-2 py-1 text-xs text-white">
-            수정
-        </a>
+        <button class="py-1 px-2 bg-blue-500 text-white rounded text-xs">
+            <a href="{{ route('articles.edit', ['article' => $article->id]) }}">
+                수정
+            </a>
+        </button>
     </p>
     @endcan
     @can('delete', $article)

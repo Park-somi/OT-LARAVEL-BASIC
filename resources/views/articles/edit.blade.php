@@ -11,7 +11,7 @@
             @csrf
             <!-- <input type="hidden" name="_method" value="PUT"> PUT 메서드 지정 -->
             @method('PATCH')
-            <input type="text" name='body' class="block w-full mb-2 rounded" value="{{ old('body') ?? $article->body }}">
+            <textarea name='body' class="block w-full mb-2 rounded">{{ old('body') ?? $article->body }}</textarea>
             @error('body')
                 <p class="text-xs text-red-500 mb-3"> {{ $message }} </p>
             @enderror

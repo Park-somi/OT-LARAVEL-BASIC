@@ -8,7 +8,7 @@
     <div class="container p-5">
         <form action="/articles" method="POST" class="mt-5">
             @csrf
-            <input type="text" name='body' class="block w-full mb-2 rounded" value="{{ old('body') }}">
+            <textarea name='body' class="block w-full mb-2 rounded" value="{{ old('body') }}"></textarea>
             @error('body')
                 <p class="text-xs text-red-500 mb-3"> {{ $message }} </p>
             @enderror
