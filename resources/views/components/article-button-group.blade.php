@@ -1,7 +1,7 @@
 <div class="flex flex-row">
     @can('update', $article)
     <p class="mr-1">
-        <button class="text-xs mr-2 text-blue-500">
+        <button class="text-sm mr-2 text-blue-500">
             <a href="{{ route('articles.edit', ['article' => $article->id]) }}">
                 수정
             </a>
@@ -12,7 +12,7 @@
     <form action="{{ route('articles.destroy', ['article' => $article->id]) }}" method="POST">
         @csrf
         @method('DELETE')
-        <button class="text-xs text-gray-500">삭제</button>
+        <button class="text-sm text-gray-500">삭제</button>
     </form>
     @endcan
 </div>

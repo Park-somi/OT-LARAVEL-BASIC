@@ -22,6 +22,11 @@ class CreateArticleRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'title' => [
+                'required',
+                'string',
+                'max:30'
+            ],
             'body' => [
                 'required', // 필수값
                 'string', // 문자열이어야 함

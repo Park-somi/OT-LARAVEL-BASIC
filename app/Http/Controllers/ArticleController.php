@@ -12,6 +12,7 @@ use App\Http\Requests\CreateArticleRequest;
 use App\Http\Requests\DeleteArticleRequest;
 use App\Http\Requests\updateArticleRequest;
 
+
 class ArticleController extends Controller
 {
     public function __construct(){
@@ -68,6 +69,7 @@ class ArticleController extends Controller
     
         // // Eloquent ORM을 이용한 데이터 삽입(2)
         Article::create([
+            'title' => $input['title'],
             'body' => $input['body'], // 입력된 'body' 값 저장
             'user_id' => Auth::id() // 현재 사용자 ID 저장
         ]);
@@ -77,6 +79,7 @@ class ArticleController extends Controller
 
     public function index(Request $request){
         $q = $request->input('q');
+        $sort = $request->input('sort', 'newest');
 
         $articles = Article::with('user') // Eloquent 관계
         ->withCount('comments') // 댓글 수 표시
@@ -84,13 +87,30 @@ class ArticleController extends Controller
             $query->where('created_at', '>', Carbon::now()->subDay());
         }])
         ->when($q, function($query, $q){
-            $query->where('body', 'like', "%$q%")
+            $query->where('title', 'like', "%$q%") // 제목 검색
+            ->orWhere('body', 'like', "%$q%") // 내용 검색
             ->orWhereHas('user', function(Builder $query) use ($q) {
                 $query->where('username', 'like', "%$q%");
             });
         })
+        ->when($sort === 'newest', function ($query) {
+            $query->latest(); // 최신순 정렬
+        })
+        ->when($sort === 'oldest', function ($query) {
+            $query->oldest(); // 오래된순 정렬
+        })
+        ->when($sort === 'comments', function ($query) {
+            $query->orderBy('comments_count', 'desc'); // 댓글 수 순 정렬
+        })
         ->latest()
-        ->paginate();
+        ->paginate(5);
+
+        // 페이지네이션 데이터에 "최근 글" 여부 추가
+        foreach ($articles as $article) {
+            $article->is_recent = $article->created_at > Carbon::now()->subDay();
+        }
+
+        $articles->appends(['q' => $q, 'sort' => $sort]);
 
         // $articles->load('user'); // Eager Loading 두 번째 방법 : load()
 
@@ -132,7 +152,8 @@ class ArticleController extends Controller
                 // 'totalCount' => $totalCount,
                 // 'page' => $page,
                 // 'perPage' => $perPage
-                'q' => $q
+                'q' => $q,
+                'sort' => $sort // 현재 정렬 기준 전달
             ]);
     }
 
@@ -140,6 +161,10 @@ class ArticleController extends Controller
         $article->load('comments.user');
         $article->loadCount('comments');
         $article->loadCount('comments as recent_comments_exists');
+        
+        // "최근 글" 여부를 추가
+        $article->is_recent = $article->created_at > Carbon::now()->subDay();
+
 
         return view('articles.show', ['article' => $article]);
     }
@@ -164,6 +189,7 @@ class ArticleController extends Controller
         // 유효성 검사가 완료된 요청 가져오기
         $input = $request->validated();
 
+        $article->title = $input['title'];
         $article->body = $input['body'];
         $article->save();
 

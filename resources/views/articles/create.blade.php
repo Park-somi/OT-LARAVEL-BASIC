@@ -7,15 +7,24 @@
     </div>
     </x-slot>
 
-    <div class="container p-5 max-w-7xl mx-auto">
+    <div class="container p-5 max-w-7xl mx-auto sm:px-6 lg:px-8">
         <form action="/articles" method="POST" class="mt-5">
             @csrf
-            <textarea name='body' class="block w-full mb-2 rounded h-40" value="{{ old('body') }}"></textarea>
-            @error('body')
-                <p class="text-xs text-red-500 mb-3"> {{ $message }} </p>
-            @enderror
+            <div class="flex items-center mb-4">
+                <div id="title" class="mr-6">제목</div>
+                <input type="text" id="title" name="title" class="flex-grow p-3 border rounded" placeholder="제목을 입력하세요">
+            </div>
+            <div class="flex items-start mb-4">
+                <div id="내용" class="mr-6 mt-2">내용</div>
+                <div class="flex-grow">
+                    <textarea id="body" name="body" class="block w-full p-3 border rounded h-60" placeholder="내용을 입력하세요">{{ old('body') }}</textarea>
+                    @error('body')
+                        <p class="text-xs text-red-500 mt-2"> {{ $message }} </p>
+                    @enderror
+                </div>
+            </div>
             <div class="flex">
-                <x-primary-button class="h-11 ml-auto mt-2 text-lg">저장하기</x-primary-button>
+                <button class="py-3 px-5 bg-gray-500 text-white rounded hover:bg-gray-700 ml-auto" type="submit">저장하기</button>
             </div>
         </form>
     </div>

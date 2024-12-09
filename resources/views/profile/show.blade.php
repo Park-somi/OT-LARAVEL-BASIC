@@ -22,13 +22,13 @@
                             <form method="POST" action="{{ route('unfollow', ['user' => $user->username]) }}">
                                 @csrf
                                 @method('delete')
-                                <x-danger-button>구독해지</x-danger-button>
+                                <x-danger-button class="mt-2">구독해지</x-danger-button>
                             </form>
                         <!-- 팔로워하고 있지 않다면 -->
                         @else
                             <form method="POST" action="{{ route('follow', ['user' => $user->username]) }}">
                                 @csrf
-                                <x-primary-button>구독하기</x-primary-button>
+                                <x-primary-button class="mt-2">구독하기</x-primary-button>
                             </form>
                         @endif
                     </div>

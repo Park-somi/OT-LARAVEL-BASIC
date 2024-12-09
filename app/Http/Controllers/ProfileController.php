@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Article;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -21,8 +22,13 @@ class ProfileController extends Controller
             $query->where('created_at', '>', Carbon::now()->subDay());
         }]);
 
+        foreach ($user->articles as $article) {
+            $article->is_recent = $article->created_at > Carbon::now()->subDay();
+        }    
+
         return view('profile.show', [
-            'user' => $user
+            'user' => $user,
+            'article' => $article
         ]);
     }
 

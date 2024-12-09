@@ -1,9 +1,20 @@
 <x-app-layout>
-    <div class="container p-5 max-w-7xl mx-auto">
+    <x-slot name="header">
+    <div class="flex justify-between items-center">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            글상세
+        </h2>
+    </div>
+    </x-slot>
+    <div class="container p-5 max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="border rounded p-4 flex justify-between">
             <div>
+                <p class="mb-3 text-lg flex items-center">
+                    <span>{{ $article->title }}</span>
+                    <span class="text-sm text-red-500 ml-2 bg-red-100 px-1 rounded">@if($article->is_recent) new @endif</span>
+                </p>
                 <p>{!! nl2br(e($article->body)) !!}</p>
-                <p>{{ $article->user->name }}</p>
+                <p class="text-gray-500">{{ $article->user->name }}</p>
                 <p class="text-xs text-gray-500">
                     <a href="{{ route('articles.show', ['article' => $article->id]) }}">
                         {{ $article->updated_at->diffForHumans() }}
@@ -16,14 +27,14 @@
             <x-article-button-group :article=$article/>
         </div>
         <!-- 댓글 영역 시작 -->
-        <div class="mt-3">
+        <div class="mt-5">
             <!-- 댓글 작성 폼 시작 -->
             <form action="{{ route('comments.store') }}" method="POST">
                 <div class="flex items-center">
                     @csrf
                     <input type="hidden" name="article_id" value="{{ $article->id }}" />
-                    <x-text-input name="body" class="mr-2 flex-grow h-11"/>
-                    <x-primary-button class="h-11">댓글 쓰기</x-primary-button>
+                    <x-text-input name="body" placeholder="댓글을 남겨보세요" class="mr-2 flex-grow h-12 text-gray-500 px-5"/>
+                    <x-primary-button class="h-12">등록</x-primary-button>
                 </div>
                 @error('body')
                     <p class="text-xs text-red-500 mb-3 mt-3">{{ $message }}</p>
@@ -34,18 +45,18 @@
             <!-- 댓글 목록 시작 -->
             <div class="mt-4 flex flex-col space-y-4">
                 @foreach($article->comments as $comment)
-                    <div id="comment_{{ $comment->id }}" class="border rounded p-4">
+                    <div id="comment_{{ $comment->id }}" class="border rounded p-5">
                         <div id="comment_view_{{ $comment->id }}" class="flex justify-between">
                             <div id="comment_body_{{ $comment->id }}">{{ $comment->body }}</div>
                             <div class="flex items-center">
                                 @can('update', $comment)
-                                <button class="text-xs mr-2 text-blue-500" onclick="editComment('{{ $comment->id }}')">수정</button>
+                                <button class="text-sm mr-2 text-blue-500" onclick="editComment('{{ $comment->id }}')">수정</button>
                                 @endcan
                                 @can('delete', $comment)
                                 <form action="{{ route('comments.destroy', ['comment' => $comment->id]) }}" class="flex items-center" method="POST">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="text-xs text-gray-500">삭제</button>
+                                    <button class="text-sm text-gray-500">삭제</button>
                                 </form>
                                 @endcan
                             </div>
@@ -54,7 +65,7 @@
                         <div id="comment_edit_{{ $comment->id }}" class="hidden">
                             @csrf
                             @method('PUT')
-                            <textarea id="edit_textarea_{{ $comment->id }}" class="border p-2 w-full">{{ $comment->body }}</textarea>
+                            <x-text-input id="edit_textarea_{{ $comment->id }}" class="border p-5 w-full h-12" value="{{ $comment->body }}"></x-text-input>
                             <div class="flex justify-end mt-2">
                                 <button class="text-xs mr-2 text-blue-500" onclick="saveComment('{{ $comment->id }}')">저장</button>
                                 <button class="text-xs text-gray-500" onclick="cancelEdit('{{ $comment->id }}')">취소</button>
