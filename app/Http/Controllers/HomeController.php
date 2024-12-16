@@ -8,14 +8,25 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * @brief 메인페이지를 위한 단일액션 Controller
+ * @detail 로그인 여부와 사용자에 따라 다른 글목록 출력
+ * @author Parksomi
+ * @data 2024-12-12
+ * @version 1.0.0
+ */
 class HomeController extends Controller
 {
+
     /**
-     * Handle the incoming request.
+     * @brief 게시글 목록을 조회하는 메소드
+     * @detail 로그인 안한 사용자의 경우, 모든 게시글 목록 출력
+     * @detail 로그인 한 사용자의 경우, 본인이 작성한 글과 구독한 사용자의 글목록 출력
      */
     public function __invoke(Request $request)
     {
         $q = $request->input('q');
+        $type = $request->input('type', '제목+내용');
         $sort = $request->input('sort', 'newest');
 
         $articles = Article::with('user') // Eloquent 관계
@@ -26,10 +37,29 @@ class HomeController extends Controller
         // 조건적 where절 
         // 로그인한 경우에만 조건 추가
         // 이 글을 쓴 user의 id가 로그인한 사용자가 팔로워하는 user의 id를 포함해야 함
-        ->when(Auth::check(), function($query){
-            $query->whereHas('user', function(Builder $query){
-                $query->whereIn('id', Auth::user()->followings->pluck('id')->push(Auth::id()));
-            });
+        // ->when(Auth::check(), function($query){
+        //     $query->whereHas('user', function(Builder $query){
+        //         $query->whereIn('id', Auth::user()->followings->pluck('id')->push(Auth::id()));
+        //     });
+        // })
+        ->when($q, function($query, $q) use ($type){
+            switch ($type){
+                case '제목':
+                    $query->where('title', 'like', "%$q%");
+
+                case '제목+내용':
+                    $query->where(function($queryBuilder) use ($q){
+                        $queryBuilder->where('title', 'like', "%$q%")
+                                    ->orwhere('body', 'like', "%$q%");
+                    });
+                
+
+                case '작성자':
+                    $query->orWhereHas('user', function(Builder $queryBuilder) use ($q) {
+                        $queryBuilder->where('username', 'like', "%$q%");
+                    });
+                    break;
+            }
         })
         ->when($sort === 'newest', function ($query) {
             $query->latest(); // 최신순 정렬

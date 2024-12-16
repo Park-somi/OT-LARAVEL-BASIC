@@ -1,7 +1,7 @@
 <div class="flex flex-row">
     @can('update', $article)
     <p class="mr-1">
-        <button class="text-sm mr-2 text-blue-500">
+        <button class="text-sm mr-2 text-indigo-500">
             <a href="{{ route('articles.edit', ['article' => $article->id]) }}">
                 수정
             </a>

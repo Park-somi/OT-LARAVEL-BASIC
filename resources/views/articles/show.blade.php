@@ -13,8 +13,15 @@
                     <span>{{ $article->title }}</span>
                     <span class="text-sm text-red-500 ml-2 bg-red-100 px-1 rounded">@if($article->is_recent) new @endif</span>
                 </p>
-                <p>{!! nl2br(e($article->body)) !!}</p>
-                <p class="text-gray-500">{{ $article->user->name }}</p>
+                <p class="mb-3">{!! nl2br(e($article->body)) !!}</p>
+                @if (!empty($article->file_name))
+                <div class="mt-2 mb-2">
+                    <span class="text-sm text-gray-500 mr-2 bg-gray-100 p-2 rounded">현재 파일</span>
+                    <span><a href="{{ route('articles.download', ['article' => $article->id]) }}" class="text-indigo-500">{{ $article->file_name }}</a></span>
+                </div>
+                <img class="w-80" src="{{ asset('storage/file/'.$article->file_name) }}">
+                @endif
+                <p class="text-gray-500 mt-2">{{ $article->user->name }}</p>
                 <p class="text-xs text-gray-500">
                     <a href="{{ route('articles.show', ['article' => $article->id]) }}">
                         {{ $article->updated_at->diffForHumans() }}

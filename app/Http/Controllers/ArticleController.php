@@ -6,26 +6,43 @@ use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\EditArticleRequest;
 use Illuminate\Database\Eloquent\Builder;
 use App\Http\Requests\CreateArticleRequest;
 use App\Http\Requests\DeleteArticleRequest;
 use App\Http\Requests\updateArticleRequest;
 
-
+/**
+ * @brief 게시글을 위한 Controller
+ * @detail 게시글 목록 조회, 상세 조회, 작성, 수정, 삭제
+ * @author Parksomi
+ * @date 2024-12-12
+ * @version 1.0.0
+ */
 class ArticleController extends Controller
 {
+    /**
+     * @brief Article 클래스의 생성자
+     * @details index와 show 메소드를 제외하고 인증된 사용자만 접근할 수 있도록 제한
+     */
     public function __construct(){
         $this->middleware('auth')->except('index', 'show');
     }
 
+    /**
+     * @brief 게시글 작성 페이지로 이동하는 메소드
+     * @details 글쓰기 화면을 출력
+     */
     public function create() {
         return view('articles/create');
     }
 
-    public function store(CreateArticleRequest $request){
-        $input = $request->validated();
-    
+    /**
+     * @brief 게시글을 저장하는 메소드
+     * @details 로그인한 사용자의 경우, 유효성 검사 후 글 저장
+     */
+    public function store(CreateArticleRequest $request){    
         // $host = config('database.connections.mysql.host'); // config 파일에서 데이터베이스 호스트 가져오기
         // $dbname = config('database.connections.mysql.database'); // 데이터베이스 이름 가져오기
         // $username = config('database.connections.mysql.username'); // 데이터베이스 사용자 이름 가져오기
@@ -68,17 +85,34 @@ class ArticleController extends Controller
         // $article->save(); // 저장
     
         // // Eloquent ORM을 이용한 데이터 삽입(2)
+        $input = $request->validated();
+
+        $fileName = null;
+        $filePath = null;
+
+        if ($request->hasFile('file')){
+            $fileName = $request->file('file')->getClientOriginalName();
+            $filePath = $request->file('file')->storeAs('public/file', $fileName);
+        }
+
         Article::create([
             'title' => $input['title'],
             'body' => $input['body'], // 입력된 'body' 값 저장
-            'user_id' => Auth::id() // 현재 사용자 ID 저장
+            'user_id' => Auth::id(), // 현재 사용자 ID 저장
+            'file_name' => $fileName,
+            'file_path' => $filePath
         ]);
     
         return redirect()->route('articles.index');
     }
 
+    /**
+     * @brief 게시글 목록을 조회하는 메소드
+     * @details 모든 사용자의 게시글 목록 조회
+     */
     public function index(Request $request){
         $q = $request->input('q');
+        $type = $request->input('type', '제목+내용');
         $sort = $request->input('sort', 'newest');
 
         $articles = Article::with('user') // Eloquent 관계
@@ -86,12 +120,31 @@ class ArticleController extends Controller
         ->withExists(['comments as recent_comments_exists' => function($query){ // 24시간이 안지난 댓글이 존재하는지
             $query->where('created_at', '>', Carbon::now()->subDay());
         }])
-        ->when($q, function($query, $q){
-            $query->where('title', 'like', "%$q%") // 제목 검색
-            ->orWhere('body', 'like', "%$q%") // 내용 검색
-            ->orWhereHas('user', function(Builder $query) use ($q) {
-                $query->where('username', 'like', "%$q%");
-            });
+        // ->when($q, function($query, $q){
+        //     $query->where('title', 'like', "%$q%") // 제목 검색
+        //     ->orWhere('body', 'like', "%$q%") // 내용 검색
+        //     ->orWhereHas('user', function(Builder $query) use ($q) {
+        //         $query->where('username', 'like', "%$q%");
+        //     });
+        // })
+        ->when($q, function($query, $q) use ($type){
+            switch ($type){
+                case '제목':
+                    $query->where('title', 'like', "%$q%");
+
+                case '제목+내용':
+                    $query->where(function($queryBuilder) use ($q){
+                        $queryBuilder->where('title', 'like', "%$q%")
+                                    ->orwhere('body', 'like', "%$q%");
+                    });
+                
+
+                case '작성자':
+                    $query->orWhereHas('user', function(Builder $queryBuilder) use ($q) {
+                        $queryBuilder->where('username', 'like', "%$q%");
+                    });
+                    break;
+            }
         })
         ->when($sort === 'newest', function ($query) {
             $query->latest(); // 최신순 정렬
@@ -157,6 +210,10 @@ class ArticleController extends Controller
             ]);
     }
 
+    /**
+     * @brief 게시글 상세조회 메소드
+     * @details 댓글 작성이 가능한 게시글 상세조회 페이지
+     */
     public function show(Article $article){
         $article->load('comments.user');
         $article->loadCount('comments');
@@ -169,12 +226,20 @@ class ArticleController extends Controller
         return view('articles.show', ['article' => $article]);
     }
 
+    /**
+     * @brief 게시글 수정 페이지로 이동하는 메소드
+     * @details 글수정 화면을 출력
+     */
     public function edit(EditArticleRequest $request, Article $article){
         // $this->authorize('update', $article);
 
         return view('articles.edit', ['article' => $article]);
     }
 
+    /**
+     * @brief 게시글을 수정하는 메소드
+     * @details 기존 게시글의 정보를 불러오고 수정 버튼 클릭 시, 유효성 검사 후 수정
+     */
     public function update(updateArticleRequest $request, Article $article){
         // 권한설정(1) - 모델
         // 권한 실패 시, 직접 응답을 정의해줘야 함
@@ -189,6 +254,15 @@ class ArticleController extends Controller
         // 유효성 검사가 완료된 요청 가져오기
         $input = $request->validated();
 
+        if ($request->hasFile('file')){
+            if(!empty($article->file_name)){
+                Storage::delete('public/file/'.$article->file_name);
+            }
+
+            $article->file_name = $request->file('file')->getClientOriginalName();
+            $article->file_path = $request->file('file')->storeAs('public/file', $article->file_name);
+        }
+
         $article->title = $input['title'];
         $article->body = $input['body'];
         $article->save();
@@ -196,10 +270,21 @@ class ArticleController extends Controller
         return redirect()->route('articles.index');
     }
 
+    /**
+     * @brief 게시글을 삭제할 수 있는 메소드
+     * @details 삭제버튼 클릭 시, 삭제 후 글목록 페이지로 이동
+     */
     public function destroy(DeleteArticleRequest $request, Article $article){
         $article->delete();
         $article->comments()->delete();
 
         return redirect()->route('articles.index');
+    }
+
+    public function download(Article $article)
+    {
+        $filePath = storage_path('app/public/file/'.$article->file_name);
+
+        return response()->download($filePath);
     }
 }

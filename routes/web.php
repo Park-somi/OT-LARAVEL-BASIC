@@ -51,6 +51,8 @@ require __DIR__.'/auth.php';
 // Route::resource('articles', ArticleController::class)->only(['index', 'show']);
 Route::resource('articles', ArticleController::class);
 
+Route::get('articles/download/{article}', [ArticleController::class, 'download'])->name('articles.download');
+
 Route::resource('comments', CommentController::class);
 
 // 개별 프로필 조회 라우트
