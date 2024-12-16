@@ -15,11 +15,15 @@
                 </p>
                 <p class="mb-3">{!! nl2br(e($article->body)) !!}</p>
                 @if (!empty($article->file_name))
-                <div class="mt-2 mb-2">
-                    <span class="text-sm text-gray-500 mr-2 bg-gray-100 p-2 rounded">현재 파일</span>
-                    <span><a href="{{ route('articles.download', ['article' => $article->id]) }}" class="text-indigo-500">{{ $article->file_name }}</a></span>
-                </div>
-                <img class="w-80" src="{{ asset('storage/file/'.$article->file_name) }}">
+                    <div class="mt-2 mb-2">
+                        <span class="text-sm text-gray-500 mr-2 bg-gray-100 p-2 rounded">현재 파일</span>
+                        <span><a href="{{ route('articles.download', ['article' => $article->id]) }}" class="text-indigo-500">{{ $article->file_name }}</a></span>
+                    </div>
+                    
+                    @if(Str::startsWith(mime_content_type(storage_path('app/public/file/' . $article->file_name)), 'image/'))
+                        <img class="w-80" src="{{ asset('storage/file/'.$article->file_name) }}">
+                    @endif
+
                 @endif
                 <p class="text-gray-500 mt-2">{{ $article->user->name }}</p>
                 <p class="text-xs text-gray-500">
