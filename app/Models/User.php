@@ -11,6 +11,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @brief 사용자 모델을 위한 클래스이다.
+ * @author Parksomi
+ * @data 2024-12-12
+ * @version 1.0.0
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;

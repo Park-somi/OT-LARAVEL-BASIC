@@ -12,6 +12,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 use App\Http\Requests\ProfileUpdateRequest;
 
+/**
+ * @brief 프로필을 위한 Controller
+ * @detail 프로필 상세 조회, 수정, 삭제 
+ * @author Parksomi
+ * @data 2024-12-12
+ * @version 1.0.0
+ */
 class ProfileController extends Controller
 {
     public function show(User $user) : View
@@ -32,9 +39,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Display the user's profile form.
-     */
     public function edit(Request $request): View
     {
         return view('profile.edit', [
@@ -43,12 +47,13 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
-     */
-    // ProfileUpdateRequest를 통해 유효성 검사된 데이터를 받아와 사용자의 프로필을 업데이트
-    // 업데이트 후, 프로필 편집 페이지로 리디렉션하고 상태 메시지를 반환
+     * @brief 프로필을 수정하는 메소드
+     * @details 로그인한 유저의 정보를 불러오고 수정 버튼 클릭 시, 유효성 검사 후 수정
+     */   
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        // ProfileUpdateRequest를 통해 유효성 검사된 데이터를 받아와 사용자의 프로필을 업데이트
+        // 업데이트 후, 프로필 편집 페이지로 리디렉션하고 상태 메시지를 반환
         // 현재 인증된 사용자 객체를 가져오고, 검증된 데이터를 채움
         $request->user()->fill($request->validated());
 
@@ -65,9 +70,6 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
-    /**
-     * Delete the user's account.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
