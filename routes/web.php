@@ -11,6 +11,8 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use Symfony\Component\EventDispatcher\DependencyInjection\RegisterListenersPass;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,3 +64,9 @@ Route::get('profile/{user:username}', [ProfileController::class, 'show'])
 
 Route::post('follow/{user}', [FollowController::class, 'store'])->name('follow');
 Route::delete('follow/{user}', [FollowController::class, 'destroy'])->name('unfollow');
+
+Route::post('/users/email', [RegisteredUserController::class, 'email'])->name('users.email');
+
+Route::post('/users/verify', [RegisteredUserController::class, 'verify'])->name('users.verify');
+
+Route::get('/users/email_check', [RegisteredUserController::class, 'emailCheck'])->name('users.email_check');

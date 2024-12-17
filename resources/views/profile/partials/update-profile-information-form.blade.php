@@ -48,8 +48,8 @@
         </div>
 
         <div>
-            <x-input-label for="username" :value="__('Username')" />
-            <p class="text-xs text-gray-500">{{ config('app.url') }}/profile/{여러분의 USERNAME} 에 쓰입니다. 영문, 숫자, 대시(-)만 쓸 수 있습니다.</p>
+            <x-input-label for="username" :value="__('닉네임')" />
+            <p class="text-xs text-gray-500">{{ config('app.url') }}/profile/{여러분의 닉네임} 에 쓰입니다. 영문, 숫자, 대시(-)만 쓸 수 있습니다.</p>
             <x-text-input id="username" name="username" type="text" class="mt-1 block w-full" :value="old('username', $user->username)" required autofocus autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('username')" />
         </div>
