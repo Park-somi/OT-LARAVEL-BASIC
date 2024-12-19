@@ -89,4 +89,10 @@ class User extends Authenticatable
     {
         return $this->followings()->where('user_id', $user->id)->exists();
     }
+
+    // video와의 관계 설정
+    public function videos() : HasMany
+    {
+        return $this->hasmany(Video::class);
+    }
 }

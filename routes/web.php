@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\VideoController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CommentController;
@@ -70,3 +71,11 @@ Route::post('/users/email', [RegisteredUserController::class, 'email'])->name('u
 Route::post('/users/verify', [RegisteredUserController::class, 'verify'])->name('users.verify');
 
 Route::get('/users/email_check', [RegisteredUserController::class, 'emailCheck'])->name('users.email_check');
+
+Route::get('/videos/upload/view', [VideoController::class, 'uploadFileView'])->name('videos.upload_view');
+
+Route::post('/videos/upload', [VideoController::class, 'uploadFile'])->name('videos.uploadFile');
+
+Route::get('/videos/index', [VideoController::class, 'index'])->name('videos.index');
+
+Route::get('/videos/show/{video}', [VideoController::class, 'show'])->name('videos.show');

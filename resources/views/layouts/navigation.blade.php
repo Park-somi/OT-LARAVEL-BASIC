@@ -18,6 +18,12 @@
                     <x-nav-link :href="route('articles.create')" :active="request()->routeIs('articles.create')">
                         {{ __('글쓰기') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('videos.index')" :active="request()->routeIs('videos.index')">
+                        {{ __('동영상') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('videos.upload_view')" :active="request()->routeIs('videos.upload_view')">
+                        {{ __('업로드') }}
+                    </x-nav-link>
                 </div>
             </div>
 
