@@ -17,14 +17,14 @@
                     <span class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-5 peer-disabled:cursor-not-allowed"></span>
                 </label>
 
-                @if(!$user->is_google2fa_enabled)
+                @if(!$user->google2fa_secret)
                 <!-- Google OTP 설정 버튼 -->
                 <a href="{{ route('google2fa.create')}}">
                     <div class="text-indigo-500 text-sm px-4 py-3 rounded hover:text-indigo-600 transition">Google OTP 설정</div>
                 </a>
                 @endif
 
-                @if($user->is_google2fa_enabled)
+                @if($user->google2fa_secret)
                 <!-- Google OTP 재설정 버튼 -->
                 <a href="{{ route('google2fa.reset')}}">
                     <div class="text-indigo-500 text-sm px-4 py-3 rounded hover:text-indigo-600 transition">Google OTP 재설정</div>
