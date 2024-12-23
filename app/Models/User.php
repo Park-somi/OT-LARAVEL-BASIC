@@ -4,13 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @brief 사용자 모델을 위한 클래스이다.
@@ -34,7 +35,8 @@ class User extends Authenticatable
         'username',
         'postcode',
         'address',
-        'detailAddress'
+        'detailAddress',
+        'google2fa_secret'
     ];
 
     /**
@@ -45,6 +47,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google2fa_secret'
     ];
 
     /**
@@ -56,10 +59,17 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    // One to Many(Inverse)
-    // public function articles(){
-    //     return $this->hasMany(Article::class);
-    // }
+    // google2faSecret 속성의 Getter와 Setter를 정의
+    // 이유? google2faSecret는 중요한 정보(예: Google OTP 시크릿 키)를 저장하는 속성이므로 데이터베이스에 암호화된 상태로 저장
+    // Getter: 모델에서 데이터를 읽을 때 동작. 저장된 값($value)을 복호화해서 반환
+    // Setter: 모델에 데이터를 저장할 때 동작. 입력된 값($value)을 암호화해서 저장
+    protected function google2faSecret(): Attribute
+    {
+        return new Attribute(
+            get: fn($value) => $value ? decrypt($value) : null,
+            set: fn($value) => $value ? encrypt($value) : null,
+        );
+    }
 
     public function getRouteKeyName()
     {

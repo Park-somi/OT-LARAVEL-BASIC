@@ -49,7 +49,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'postcode' => $request->postcode,
             'address' => $request->address,
-            'detailAddress' => $request->detailAddress
+            'detailAddress' => $request->detailAddress,
         ]);
 
         $request->session()->forget(['email_check']);
@@ -64,10 +64,10 @@ class RegisteredUserController extends Controller
     public function email(Request $request)
     {
         $email = $request->input('email');
-        $pass = rand(100000, 999999);
+        $pass = rand(100000, 999999); // 인증코드 생성을 위한 6자리 랜덤변수
         Log::info('Received email: '.$email.$pass);
-        $request->session()->put('pass', $pass);
-        $storedPass = $request->session()->get('pass');
+        $request->session()->put('pass', $pass); // 세션션에 생성된 인증코드 저장
+        $storedPass = $request->session()->get('pass'); // 세션에 저장된 인증코드 가져오기
 
         Log::info('Stored pass in session: ' . $storedPass);
         try {
@@ -84,14 +84,14 @@ class RegisteredUserController extends Controller
 
     public function verify(Request $request)
     {
-        $code = $request->input('code');
+        $code = $request->input('code'); // 사용자가 입력한 코드
         Log::info('입력코드'.$code);
-        $sessionCode = $request->session()->get('pass');
+        $sessionCode = $request->session()->get('pass'); // 세션에 저장된 인증코드
 
-        if($code == $sessionCode){
+        if($code == $sessionCode){ // 같을 경우
             $request->session()->put('email_check', true);
             return response()->json(['success' => true, 'message' => '인증에 성공하였습니다.']);
-        } else {
+        } else { // 다를 경우
             $request->session()->put('email_check', false);
             return response()->json(['success' => false, 'message' => '인증에 실패하였습니다.']);
         }

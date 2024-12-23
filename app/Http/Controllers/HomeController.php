@@ -25,6 +25,13 @@ class HomeController extends Controller
      */
     public function __invoke(Request $request)
     {
+        // 로그인된 사용자 중 Google OTP 인증이 완료되지 않은 경우 로그아웃
+        if (Auth::check() && session('google2fa_authenticated') === false) {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+        }
+
         $q = $request->input('q');
         $type = $request->input('type', '제목+내용');
         $sort = $request->input('sort', 'newest');

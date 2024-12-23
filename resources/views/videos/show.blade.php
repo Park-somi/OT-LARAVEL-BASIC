@@ -58,22 +58,4 @@
             player.load();
         })
     })
-
-    // 10초 전 이동 버튼
-    player.controlBar.addChild('button', {
-        text: '⏪ 10초 전',
-        name: 'Back10Seconds',
-        clickHandler: () => {
-            player.currentTime(Math.max(0, player.currentTime() - 10));
-        }
-    });
-
-    // 10초 후 이동 버튼
-    player.controlBar.addChild('button', {
-        text: '10초 후 ⏩',
-        name: 'Forward10Seconds',
-        clickHandler: () => {
-            player.currentTime(Math.min(player.duration(), player.currentTime() + 10));
-        }
-    });
 </script>
