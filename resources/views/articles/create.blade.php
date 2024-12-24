@@ -24,14 +24,15 @@
                 </div>
             </div>
             <div class="flex items-center mb-4">
-                <label for="file" class="mr-6">파일</label>
-                <input type="file" id="file" name="file[]" class="flex-grow" multiple>
+                <div class="mr-6">파일</div>
+                <input type="file" id="file" name="file[]" class="flex-grow hidden" multiple>
+                <label for="file" class="cursor-pointer bg-indigo-500 text-white py-2 px-4 rounded hover:bg-indigo-600">파일 선택</label>
             </div>
             <div class="flex">
                 <label class="mr-6 invisible">파일</label> <!-- 빈 공간 유지 -->
                 <div id="file-list-container" class="flex-grow border border-gray-300 p-4 rounded-md bg-gray-50">
                     <ul id="file-list" class="pl-0 text-gray-500">
-                        <li>아직 선택된 파일이 없습니다.</li>
+                        <li>선택된 파일이 없습니다.</li>
                     </ul>
                 </div>
             </div>
