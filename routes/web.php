@@ -61,7 +61,7 @@ require __DIR__.'/auth.php';
 // Route::resource('articles', ArticleController::class)->only(['index', 'show']);
 Route::resource('articles', ArticleController::class);
 
-Route::get('articles/download/{article}', [ArticleController::class, 'download'])->name('articles.download');
+Route::get('articles/download/{file}', [ArticleController::class, 'download'])->name('articles.download');
 
 Route::resource('comments', CommentController::class);
 

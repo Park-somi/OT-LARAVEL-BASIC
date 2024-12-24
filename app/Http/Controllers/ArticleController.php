@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -87,21 +88,30 @@ class ArticleController extends Controller
         // // Eloquent ORM을 이용한 데이터 삽입(2)
         $input = $request->validated();
 
-        $fileName = null;
-        $filePath = null;
-
-        if ($request->hasFile('file')){
-            $fileName = $request->file('file')->getClientOriginalName();
-            $filePath = $request->file('file')->storeAs('public/file', $fileName);
-        }
-
-        Article::create([
+        $article = Article::create([
             'title' => $input['title'],
             'body' => $input['body'], // 입력된 'body' 값 저장
             'user_id' => Auth::id(), // 현재 사용자 ID 저장
-            'file_name' => $fileName,
-            'file_path' => $filePath
         ]);
+
+        // 파일 저장
+        if ($request->hasFile('file')) {
+            $files = $request->file('file');
+
+            foreach ($files as $file) {
+                $filePath = 'file/';
+                $storagePath = public_path($filePath); // 전체 경로
+                $fileName = $file->getClientOriginalName();
+                $file->move($storagePath, $fileName);
+                $fullPath = $filePath.$fileName;
+
+                File::create([
+                    'article_id' => $article->id,
+                    'file_name' => $fileName,
+                    'file_path' => $fullPath,
+                ]);
+            }
+        }
     
         return redirect()->route('articles.index');
     }
@@ -222,8 +232,9 @@ class ArticleController extends Controller
         // "최근 글" 여부를 추가
         $article->is_recent = $article->created_at > Carbon::now()->subDay();
 
+        $files = File::where('article_id', $article->id)->get();
 
-        return view('articles.show', ['article' => $article]);
+        return view('articles.show', ['article' => $article, 'files' => $files]);
     }
 
     /**
@@ -233,7 +244,9 @@ class ArticleController extends Controller
     public function edit(EditArticleRequest $request, Article $article){
         // $this->authorize('update', $article);
 
-        return view('articles.edit', ['article' => $article]);
+        $files = File::where('article_id', $article->id)->get();
+
+        return view('articles.edit', ['article' => $article, 'files' => $files]);
     }
 
     /**
@@ -254,13 +267,34 @@ class ArticleController extends Controller
         // 유효성 검사가 완료된 요청 가져오기
         $input = $request->validated();
 
-        if ($request->hasFile('file')){
-            if(!empty($article->file_name)){
-                Storage::delete('public/file/'.$article->file_name);
-            }
+        // 삭제할 파일 처리
+        if ($request->has('files_to_delete')){ // 삭제할 파일이 있을 경우
+            $filesToDelete = $request->input('files_to_delete'); // 삭제할 파일 ID
+            File::whereIn('id', $filesToDelete)->each(function($file){ // 삭제할 파일 ID를 가진 파일을 찾아서 삭제
+                // 실제 파일 삭제
+                if(file_exists(public_path($file->file_path))){
+                    unlink(public_path($file->file_path));
+                }
+                // 데이터베이스 삭제
+                $file->delete();
+            });
+        }
+        
+        // 새로운 파일 저장
+        if ($request->hasFile('new_files')){ // 새로운 파일이 있을 경우
+            foreach ($request->file('new_files') as $file) { 
+                $filePath = 'file/';
+                $storagePath = public_path($filePath); // 전체 경로
+                $fileName = $file->getClientOriginalName();
+                $file->move($storagePath, $fileName);
+                $fullPath = $filePath.$fileName;
 
-            $article->file_name = $request->file('file')->getClientOriginalName();
-            $article->file_path = $request->file('file')->storeAs('public/file', $article->file_name);
+                File::create([
+                    'article_id' => $article->id,
+                    'file_name' => $fileName,
+                    'file_path' => $fullPath,
+                ]);
+            }
         }
 
         $article->title = $input['title'];
@@ -277,13 +311,18 @@ class ArticleController extends Controller
     public function destroy(DeleteArticleRequest $request, Article $article){
         $article->delete();
         $article->comments()->delete();
+        $article->files()->delete();
 
         return redirect()->route('articles.index');
     }
 
-    public function download(Article $article)
+    /**
+     * @brief 파일 다운로드 메소드
+     * @details 파일 다운로드
+     */
+    public function download(File $file)
     {
-        $filePath = storage_path('app/public/file/'.$article->file_name);
+        $filePath = public_path($file->file_path);
 
         return response()->download($filePath);
     }

@@ -17,7 +17,7 @@ class Article extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'body', 'user_id', 'file_name', 'file_path']; // body와 user_id만 허용(화이트리스트방식)
+    protected $fillable = ['title', 'body', 'user_id']; // body와 user_id만 허용(화이트리스트방식)
     // protected $guarded = ['id';] // id빼고는 다 허용하겠음(블랙리스트방식)
 
     public function user(): BelongsTo
@@ -28,6 +28,11 @@ class Article extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(File::class);
     }
 
 }

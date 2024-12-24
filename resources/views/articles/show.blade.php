@@ -7,36 +7,59 @@
     </div>
     </x-slot>
     <div class="container p-5 max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="border rounded p-4 flex justify-between">
-            <div>
-                <p class="mb-3 text-lg flex items-center">
+        <div class="border rounded p-8">
+            <!-- 상단 제목과 버튼 -->
+            <div class="flex justify-between items-center border-b border-gray-300 pb-4 mb-4">
+                <div class="text-lg flex items-center">
                     <span>{{ $article->title }}</span>
                     <span class="text-sm text-red-500 ml-2 bg-red-100 px-1 rounded">@if($article->is_recent) new @endif</span>
-                </p>
-                <p class="mb-3">{!! nl2br(e($article->body)) !!}</p>
-                @if (!empty($article->file_name))
-                    <div class="mt-2 mb-2">
-                        <span class="text-sm text-gray-500 mr-2 bg-gray-100 p-2 rounded">현재 파일</span>
-                        <span><a href="{{ route('articles.download', ['article' => $article->id]) }}" class="text-indigo-500">{{ $article->file_name }}</a></span>
-                    </div>
-                    
-                    @if(Str::startsWith(mime_content_type(storage_path('app/public/file/' . $article->file_name)), 'image/'))
-                        <img class="w-80" src="{{ asset('storage/file/'.$article->file_name) }}">
-                    @endif
+                </div>
+                <x-article-button-group :article="$article" />
+            </div>
+            <!-- 나머지 콘텐츠 -->
+            <div class="mt-4">
+                <!-- 본문 -->
+                <div class="mb-3 p-2">{!! nl2br(e($article->body)) !!}</div>
 
+                <!-- 첨부 파일 -->
+                @if ($files->isNotEmpty())
+                    <div class="mt-4 mb-4">
+                        <span class="text-sm text-gray-500 mr-2 bg-gray-100 p-2 rounded">첨부 파일</span>
+                        <div id="file-list-container" class="w-full border border-gray-300 p-4 rounded-md bg-gray-50 mt-4">
+                            <ul class="pl-0 text-gray-500">
+                                @foreach ($files as $file)
+                                    <li class="flex items-center px-2 py-2">
+                                        <a href="{{ route('articles.download', ['file' => $file->id]) }}" class="text-indigo-500">
+                                            {{ $file->file_name }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 이미지 갤러리 -->
+                    <div class="image-gallery">
+                        @foreach ($files as $file)
+                            @if (Str::startsWith(mime_content_type(public_path($file->file_path)), 'image/'))
+                                <img class="w-80 mb-4" src="{{ asset($file->file_path) }}" alt="{{ $file->file_name }}">
+                            @endif
+                        @endforeach
+                    </div>
                 @endif
-                <p class="text-gray-500 mt-2">{{ $article->user->name }}</p>
-                <p class="text-xs text-gray-500">
+
+                <!-- 작성자와 댓글 -->
+                <span class="text-sm text-gray-700 bg-indigo-100 px-2 py-1 rounded">{{ $article->user->name }}</span>
+                <div class="text-xs text-gray-500 mt-3">
                     <a href="{{ route('articles.show', ['article' => $article->id]) }}">
                         {{ $article->updated_at->diffForHumans() }}
                         <span>댓글 {{ $article->comments_count }}</span>
                         <span class="text-red-500">@if($article->recent_comments_exists) (new) @endif</span>
                     </a>
-                </p>
+                </div>
             </div>
-    
-            <x-article-button-group :article=$article/>
         </div>
+
         <!-- 댓글 영역 시작 -->
         <div class="mt-5">
             <!-- 댓글 작성 폼 시작 -->
