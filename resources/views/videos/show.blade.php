@@ -12,7 +12,7 @@
 
             <!-- 동영상 컨테이너 -->
             <div class="w-[70%]">
-                <h1 class="text-2xl font-bold mt-2 mb-6">{{ $video->title }}</h1>
+                <div id="video-title" class="text-2xl font-bold mt-2 mb-6 bg-gray-100 px-6 py-2 rounded-full inline-block">{{ $video->title }}</div>
                 <video id="my-video" class="video-js vjs-big-play-centered"
                     data-setup='{"controls": true, "fluid": true, "autoplay": false, "muted": true, "playbackRates": [0.5, 1, 1.5, 2]}'
                     preload="auto" controlsList="nodownload">
@@ -25,8 +25,8 @@
                 <h2 class=" border rounded-lg p-2 text-lg font-bold mb-4 text-white bg-indigo-700 text-center">동영상 목록</h2>
                 @foreach ($videos as $video)
                     <ul class="space-y-2">
-                        <li class="border rounded bg-gray-100 hover:bg-indigo-100 p-2  text-center font-bold mt-5">
-                            <button class="video-button" data-video-src="{{ asset($video->file_path) }}">
+                        <li class="border rounded bg-gray-100 hover:bg-indigo-100 p-2 text-center font-bold mt-5">
+                            <button class="video-button" data-video-src="{{ asset($video->file_path) }}"  data-title="{{ $video->title }}">
                                 <p class="text-lg">
                                     <i class="fa-regular fa-circle-check mr-1" style="color: green"></i>Laravel 실습
                                 </p>
@@ -48,14 +48,22 @@
 <script>
     var player = videojs("my-video");
 
+    // 모든 동영상 버튼에 클릭 이벤트 추가
     document.querySelectorAll('.video-button').forEach(button => {
         button.addEventListener('click', function(){
+            // 선택한 동영상의 src와 제목 가져오기
             var videoSrc = this.getAttribute('data-video-src');
+            var videoTitle = this.getAttribute('data-title');
+
+            // 비디오 플레이어의 소스를 변경
             player.src({
                 src: videoSrc,
                 type: 'video/mp4'
             });
             player.load();
+
+            // 제목 업데이트
+            document.getElementById('video-title').textContent = videoTitle;
         })
     })
 </script>
