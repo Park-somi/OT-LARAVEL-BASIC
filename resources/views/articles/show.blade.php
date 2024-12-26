@@ -29,6 +29,7 @@
                             <ul class="pl-0 text-gray-500">
                                 @foreach ($files as $file)
                                     <li class="flex items-center px-2 py-2">
+                                        <!-- 파일 다운로드 링크 -->
                                         <a href="{{ route('articles.download', ['file' => $file->id]) }}" class="text-indigo-500">
                                             {{ $file->file_name }}
                                         </a>

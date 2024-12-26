@@ -30,6 +30,7 @@ class SendEmail extends Mailable
      */
     public function envelope(): Envelope
     {
+        // 이메일 제목
         return new Envelope(
             subject: 'Laravel 이메일 인증',
         );
@@ -40,6 +41,7 @@ class SendEmail extends Mailable
      */
     public function content(): Content
     {
+        // 이메일 내용
         return new Content(
             view: 'emails.email',
         );

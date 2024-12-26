@@ -79,7 +79,6 @@ class RegisteredUserController extends Controller
             Log::error('Failed to send email: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Failed to send email'], 500);
         }
-
     }
 
     public function verify(Request $request)

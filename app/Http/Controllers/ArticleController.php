@@ -141,14 +141,11 @@ class ArticleController extends Controller
             switch ($type){
                 case '제목':
                     $query->where('title', 'like', "%$q%");
-
                 case '제목+내용':
                     $query->where(function($queryBuilder) use ($q){
                         $queryBuilder->where('title', 'like', "%$q%")
                                     ->orwhere('body', 'like', "%$q%");
-                    });
-                
-
+                    });              
                 case '작성자':
                     $query->orWhereHas('user', function(Builder $queryBuilder) use ($q) {
                         $queryBuilder->where('username', 'like', "%$q%");
@@ -232,6 +229,7 @@ class ArticleController extends Controller
         // "최근 글" 여부를 추가
         $article->is_recent = $article->created_at > Carbon::now()->subDay();
 
+        // 해당 article ID를 가진 파일들을 가져옴
         $files = File::where('article_id', $article->id)->get();
 
         return view('articles.show', ['article' => $article, 'files' => $files]);
