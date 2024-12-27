@@ -57,12 +57,15 @@ require __DIR__.'/auth.php';
 //     Route::delete('articles/{article}', 'destroy')->name('articles.delete');
 // });
 
-// 리소스 라우트
+// 게시글 리소스 라우트
 // Route::resource('articles', ArticleController::class)->only(['index', 'show']);
 Route::resource('articles', ArticleController::class);
-
+// 게시글 첨부파일 다운로드
 Route::get('articles/download/{file}', [ArticleController::class, 'download'])->name('articles.download');
+// 게시글 엑셀 다운로드
+Route::get('download/excel', [ArticleController::class, 'excel'])->name('download.excel');
 
+// 댓글 리소스 라우트
 Route::resource('comments', CommentController::class);
 
 // 개별 프로필 조회 라우트
@@ -70,7 +73,7 @@ Route::get('profile/{user:username}', [ProfileController::class, 'show'])
 ->name('profile')
 ->where('user', '^[A-Za-z0-9-]+$'); // 정규표현식 제약
 
-// 팔로잉 생성, 삭제 라우트트
+// 팔로잉 생성, 삭제 라우트
 Route::post('follow/{user}', [FollowController::class, 'store'])->name('follow');
 Route::delete('follow/{user}', [FollowController::class, 'destroy'])->name('unfollow');
 

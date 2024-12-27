@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
+use Maatwebsite\Excel\ExcelServiceProvider;
 
 return [
 
@@ -169,6 +170,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\TelescopeServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class, // 엑셀 서비스 프로바이더 추가
     ])->toArray(),
 
     /*
@@ -183,6 +185,9 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class, // 엑셀 서비스 에일리어스 추가
+
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 

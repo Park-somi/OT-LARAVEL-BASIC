@@ -7,6 +7,11 @@
             <div class="flex">
                 <form method="GET">
                     <div class="flex items-center">
+                        <!-- Excel 다운받기 -->
+                        <a href="{{ route('download.excel')}}" class="bg-green-700 text-white rounded px-4 py-2 mr-4" style="float: right;">
+                            Excel
+                        </a>
+
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
                                 <button type="button" class="inline-flex items-center px-4 py-3 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-gray-100 hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -37,7 +42,7 @@
                         </x-dropdown>
 
                         <!-- 검색창 -->
-                        <input type="text" name="q" class="rounded border-gray-200 ml-4" placeholder="{{ $q ?? '검색' }}" value="{{ $q ?? '' }}" />
+                        <input type="text" name="q" class="rounded border-gray-200 ml-4" placeholder="{{ $q ?? '검색' }}" value="{{ $q ?? '' }}">
 
                         <!-- 정렬 타입을 저장할 hidden 필드 -->
                         <input type="hidden" name="sort" value="{{ request('sort', 'newest') }}">

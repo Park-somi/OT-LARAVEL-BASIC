@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
 use App\Models\File;
+use App\Models\Article;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Exports\ArticlesExport;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\EditArticleRequest;
 use Illuminate\Database\Eloquent\Builder;
@@ -324,4 +326,11 @@ class ArticleController extends Controller
 
         return response()->download($filePath);
     }
+
+    public function excel()
+    {
+         return Excel::download(new ArticlesExport, 'articles.xlsx');
+            
+    }
+
 }
