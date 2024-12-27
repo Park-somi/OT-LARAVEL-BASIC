@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\File;
 use App\Models\Article;
+use App\Exports\ExcelExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Exports\ArticlesExport;
@@ -327,10 +328,22 @@ class ArticleController extends Controller
         return response()->download($filePath);
     }
 
+    /**
+     * @brief 엑셀 다운로드 메소드
+     * @details 엑셀 파일 다운로드
+     */
     public function excel()
     {
-         return Excel::download(new ArticlesExport, 'articles.xlsx');
-            
+        $headings = [
+            'ID',
+            'Title',
+            'Body',
+            'User ID',
+            'Created At',
+            'Updated At',
+        ];
+        // 사용할 Models::class, $headings, '파일명' 순으로 넣어줌
+        return Excel::download(new ExcelExport(Article::class, $headings), 'articles.xlsx');
     }
 
 }
