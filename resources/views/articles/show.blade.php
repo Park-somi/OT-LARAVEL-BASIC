@@ -12,7 +12,12 @@
             <div class="flex justify-between items-center border-b border-gray-300 pb-4 mb-4">
                 <div class="text-lg flex items-center">
                     <span>{{ $article->title }}</span>
-                    <span class="text-sm text-red-500 ml-2 bg-red-100 px-1 rounded">@if($article->is_recent) new @endif</span>
+                    @if($article->is_recent)
+                    <span class="text-sm text-red-500 ml-2 bg-red-100 px-1 rounded">new</span>
+                    @endif
+                    <a href="{{ route('articles.pdf', ['article' => $article->id]) }}" style="float: right;" class="bg-purple-200 text-purple-500 rounded px-1 ml-2 text-sm">
+                        pdf
+                    </a>
                 </div>
                 <x-article-button-group :article="$article" />
             </div>

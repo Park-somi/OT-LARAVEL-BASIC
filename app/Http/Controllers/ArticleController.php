@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\File;
 use App\Models\Article;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Exports\ExcelExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -519,5 +520,14 @@ class ArticleController extends Controller
         $count = $query->count(); // 데이터 개수 조회
 
         return response()->json(['count' => $count]);
+    }
+    
+    public function pdf(Article $article)
+    {
+        $data = Article::select('body', 'created_at')->where('id', $article->id)->get();
+
+        $pdf = PDF::loadView('articles.pdf', ['data' => $data]); // articles.pdf : PDF로 변환할 뷰 페이지
+
+        return $pdf->download('article.pdf');
     }
 }

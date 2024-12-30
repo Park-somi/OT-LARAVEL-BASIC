@@ -21,6 +21,7 @@
         "symfony/dependency-injection": "^6.4"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.1",
         "fakerphp/faker": "^1.9.1",
         "laravel-lang/common": "^6.4",
         "laravel/breeze": "^1.29",
