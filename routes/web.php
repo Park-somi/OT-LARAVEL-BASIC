@@ -60,10 +60,12 @@ require __DIR__.'/auth.php';
 // 게시글 리소스 라우트
 // Route::resource('articles', ArticleController::class)->only(['index', 'show']);
 Route::resource('articles', ArticleController::class);
-// 게시글 첨부파일 다운로드
-Route::get('articles/download/{file}', [ArticleController::class, 'download'])->name('articles.download');
-// 게시글 엑셀 다운로드
-Route::get('download/excel', [ArticleController::class, 'excel'])->name('download.excel');
+Route::get('articles/download/{file}', [ArticleController::class, 'download'])->name('articles.download'); // 게시글 첨부파일 다운로드
+Route::get('download/excel', [ArticleController::class, 'excel'])->name('download.excel'); // 게시글 엑셀 다운로드
+Route::get('download/excel/csv', [ArticleController::class, 'csv'])->name('download.excel.csv'); // 게시글 엑셀 CSV 다운로드
+Route::post('download/excel/filtering', [ArticleController::class, 'filtering'])->name('download.excel.filtering'); // 게시글 엑셀 필터링 다운로드
+Route::get('download/fastExcel', [ArticleController::class, 'fastExcel'])->name('download.fastExcel'); // 게시글 엑셀 FastExcel 다운로드
+Route::get('excel/data_count', [ArticleController::class, 'data_count'])->name('excel.data_count'); // 게시글 엑셀 데이터 개수 조회
 
 // 댓글 리소스 라우트
 Route::resource('comments', CommentController::class);

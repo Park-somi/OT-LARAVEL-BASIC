@@ -11,11 +11,17 @@ use App\Exports\ArticlesExport;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
+use OpenSpout\Common\Entity\Style\Color;
+use OpenSpout\Common\Entity\Style\Style;
 use App\Http\Requests\EditArticleRequest;
 use Illuminate\Database\Eloquent\Builder;
+use OpenSpout\Common\Entity\Style\Border;
+use Spatie\SimpleExcel\SimpleExcelWriter;
 use App\Http\Requests\CreateArticleRequest;
 use App\Http\Requests\DeleteArticleRequest;
 use App\Http\Requests\updateArticleRequest;
+use Rap2hpoutre\FastExcel\Facades\FastExcel;
+use OpenSpout\Common\Entity\Style\BorderPart;
 
 /**
  * @brief 게시글을 위한 Controller
@@ -346,4 +352,172 @@ class ArticleController extends Controller
         return Excel::download(new ExcelExport(Article::class, $headings), 'articles.xlsx');
     }
 
+    /**
+     * @brief CSV 다운로드 메소드
+     * @details CSV 파일 다운로드
+     */
+    public function csv()
+    {
+        // 현재 날짜를 'YYYYMMDD' 형식으로 가져오기
+        $currentTime = now()->format('Ymd');
+        
+        // 파일 이름을 '게시판_YYYYMMDD.csv' 형식으로 생성
+        $fileName = '게시판_' . $currentTime . '.csv';
+        
+        // SimpleExcelWriter를 사용하여 스트리밍 방식의 CSV 파일 다운로드 준비
+        // 스트리밍 방식 : 한 번에 데이터를 모두 메모리에 올리지 않고, 점진적으로 데이터를 처리하여 메모리 사용량을 최소화
+        $writer = SimpleExcelWriter::streamDownload($fileName);
+    
+        // Article 모델에서 모든 데이터를 가져오기
+        $query = Article::all();
+    
+        // 데이터 처리 카운터 초기화
+        $i = 0;
+    
+        // 데이터를 3000개씩 나누어 처리 (lazy 로딩으로 메모리 사용 최소화)
+        foreach ($query->lazy(3000) as $article) {
+            // 현재 데이터를 배열로 변환하여 CSV에 한 행씩 추가
+            $writer->addRow($article->toArray());
+            
+            // 3000개의 데이터마다 출력 버퍼를 비워 메모리 사용량 줄이기
+            if ($i % 3000 === 0) {
+                flush();
+            }
+    
+            $i++;
+        }
+    
+        // CSV 파일을 브라우저로 스트리밍하여 사용자에게 다운로드 제공
+        return $writer->toBrowser();
+    }
+
+    /**
+     * @brief 엑셀 필터링 다운로드 메소드
+     * @details 엑셀 파일 필터링 다운로드
+     */
+    public function filtering(Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $authorName = $request->input('author_name');
+        $title = $request->input('title');
+        $downloadType = $request->input('download_type');
+        $i = 0;
+
+        // 기본 쿼리 작성 (특정 열 선택)
+        $query = Article::select('id', 'title', 'body', 'user_id', 'created_at', 'updated_at');
+
+        if ($startDate && $endDate) {
+            // 작성날짜가 시작날짜와 종료날짜 사이에 있는 데이터만 필터링
+            $query->where('created_at', '>=', $startDate)
+                ->where('created_at', '<=', $endDate. ' 23:59:59');
+        }
+
+        if ($authorName) {
+            // 작성자명으로 필터링 (user_id를 이용해서 필터링)
+            $query->whereHas('user', function ($query) use ($authorName) {
+                $query->where('name', 'like', '%' . $authorName . '%');
+            });
+        }
+
+        if ($title) {
+            // 제목으로 필터링
+            $query->where('title', 'like', '%' . $title . '%');
+        }
+
+        // 필터링 데이터 생성날짜로 정렬하기
+        $articles = $query->orderBy('created_at', 'asc')->get();
+
+        // 로컬 시간대로 변환된 데이터를 새로 매핑
+        $transformedArticles = $articles->map(function ($article) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'body' => $article->body,
+                'user_id' => $article->user_id,
+                'created_at' => Carbon::parse($article->created_at)->timezone('Asia/Seoul')->toDateTimeString(),
+                'updated_at' => Carbon::parse($article->updated_at)->timezone('Asia/Seoul')->toDateTimeString(),
+            ];
+        });
+
+        // 파일 이름 생성
+        $currentTime = now()->format('Ymd');
+        $filename = '게시판_필터링_' . $currentTime . ($downloadType === 'excel' ? '.xlsx' : '.csv');
+
+        // CSV 또는 XLSX 파일 생성 및 다운로드
+        $writer = SimpleExcelWriter::streamDownload($filename, $downloadType === 'excel' ? 'xlsx' : 'csv');
+        foreach ($transformedArticles as $article) {
+            $writer->addRow($article);
+
+            if ($i % 3000 === 0) {
+                flush();
+            }
+            $i++;
+        }
+
+        return $writer->toBrowser(); // 파일을 브라우저로 전송
+    }
+
+    /**
+     * @brief 빠른 엑셀 다운로드 메소드
+     * @details 빠른 엑셀 파일 다운로드
+     */
+    public function fastExcel()
+    {
+        $currentTime = now()->format('Ymd');
+        $fileName = '게시판_' . $currentTime . '.xlsx';
+
+        $articles = Article::all()->map(function ($article) {
+            // 줄바꿈 제거
+            $article->body = str_replace(["\r", "\n"], '', $article->body);
+            return $article;
+        });
+
+        $borderParts = [
+            Border::TOP => new BorderPart(Border::TOP, Border::STYLE_SOLID),
+            Border::BOTTOM => new BorderPart(Border::BOTTOM, Border::STYLE_SOLID),
+            Border::LEFT => new BorderPart(Border::LEFT, Border::STYLE_SOLID),
+            Border::RIGHT => new BorderPart(Border::RIGHT, Border::STYLE_SOLID),
+        ];
+        $border = new Border(...$borderParts);
+
+        $header_style = (new Style())->setFontBold()->setBorder($border)->setBackgroundColor('EFEFEF')->setFontSize(15);
+        $rows_style = (new Style())->setFontSize(12)->setBorder($border);
+
+        return FastExcel::data($articles)->headerStyle($header_style)->rowsStyle($rows_style)->download($fileName);
+    }
+
+    /**
+     * @brief 엑셀 데이터 개수 조회 메소드
+     * @details 엑셀 데이터 개수 조회
+     */
+    public function data_count(Request $request)
+    {
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+        $authorName = $request->author_name;
+        $title = $request->title;
+
+        // 기본 쿼리 작성 (특정 열 선택)
+        $query = Article::select('id', 'title', 'body', 'user_id', 'created_at', 'updated_at');
+
+        if ($startDate && $endDate) {
+            $query->where('created_at', '>=', $startDate)
+                ->where('created_at', '<=', $endDate. ' 23:59:59');
+        }
+
+        if ($authorName) {
+            $query->whereHas('user', function ($query) use ($authorName) {
+                $query->where('name', 'like', '%' . $authorName . '%');
+            });
+        }
+
+        if ($title) {
+            $query->where('title', 'like', '%' . $title . '%');
+        }
+
+        $count = $query->count(); // 데이터 개수 조회
+
+        return response()->json(['count' => $count]);
+    }
 }

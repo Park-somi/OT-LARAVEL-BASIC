@@ -16,7 +16,7 @@ class ArticleSeeder extends Seeder
     {
         $faker = Faker::create();
 
-        for ($i = 0; $i < 1000000; $i++){
+        for ($i = 0; $i < 50000; $i++){
             DB::table('articles')->insert([
                 'title' => $faker->sentence,
                 'body' => $faker->text,

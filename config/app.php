@@ -187,7 +187,7 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
 
         'Excel' => Maatwebsite\Excel\Facades\Excel::class, // 엑셀 서비스 에일리어스 추가
-
+        'FastExcel' => Rap2hpoutre\FastExcel\FastExcel::class, // FastExcel 서비스 에일리어스 추가
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 
